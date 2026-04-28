@@ -16,3 +16,6 @@ backend/dist/
 .vscode/
 .DS_Store
 npm-debug.log*
+
+# Archives
+*.zip
