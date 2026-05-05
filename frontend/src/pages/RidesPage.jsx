@@ -63,7 +63,7 @@ export function RidesPage() {
   };
 
   return (
-    <div className="stack stack--lg">
+    <div className="rides-page stack stack--lg">
       <PageHeader
         eyebrow="Curse disponibile"
         title="Găsește rapid o cursă potrivită"
