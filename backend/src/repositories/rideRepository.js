@@ -13,7 +13,7 @@ const createRide = async (driverId, origin, destination, departureTime, availabl
 };
 
 const getAllRides = async (filters = {}) => {
-  const conditions = [];
+  const conditions = ['rides.departure_time >= NOW()'];
   const values = [];
 
   if (filters.origin) {
