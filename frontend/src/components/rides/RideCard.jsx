@@ -57,27 +57,31 @@ export function RideCard({ ride, isAuthenticated, isOwnRide, canBook, onBook }) 
       </div>
 
       <div className="ride-card__actions">
-        <Link className="btn btn--ghost btn--md" to={`/reviews/${ride.driver_id}`}>
+        <Link
+          className="btn btn--ghost btn--md"
+          to={`/reviews/${ride.driver_id}`}
+          state={{ userName: ride.driver_name }}
+        >
           Vezi review-uri șofer
         </Link>
 
         {isOwnRide ? (
-  <Link className="btn btn--primary btn--md" to="/rides/my">
-    Gestionează cursa
-  </Link>
-) : Number(ride.available_seats) <= 0 ? (
-  <Button disabled>
-    Cursă ocupată
-  </Button>
-) : isAuthenticated ? (
-  <Button onClick={() => onBook(ride)}>
-    Rezervă loc
-  </Button>
-) : (
-  <Link className="btn btn--primary btn--md" to="/login">
-    Autentifică-te pentru rezervare
-  </Link>
-)}
+          <Link className="btn btn--primary btn--md" to="/rides/my">
+            Gestionează cursa
+          </Link>
+        ) : Number(ride.available_seats) <= 0 ? (
+          <Button disabled>
+            Cursă ocupată
+          </Button>
+        ) : isAuthenticated ? (
+          <Button onClick={() => onBook(ride)}>
+            Rezervă loc
+          </Button>
+        ) : (
+          <Link className="btn btn--primary btn--md" to="/login">
+            Autentifică-te pentru rezervare
+          </Link>
+        )}
       </div>
     </article>
   );

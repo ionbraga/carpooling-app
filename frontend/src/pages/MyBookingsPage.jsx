@@ -191,9 +191,13 @@ export function MyBookingsPage() {
                     </Button>
                   ) : null}
 
-                  <Link className="btn btn--ghost btn--md" to={`/reviews/${booking.driver_id}`}>
-                    Vezi / adaugă review
-                  </Link>
+                  <Link
+  className="btn btn--ghost btn--md"
+  to={`/reviews/${booking.driver_id}`}
+  state={{ userName: booking.driver_name }}
+>
+  Vezi / adaugă review
+</Link>
                 </div>
               </div>
             </article>

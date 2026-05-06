@@ -1354,3 +1354,113 @@ img {
     margin-top: 1.25rem;
   }
 }
+
+.reviews-page {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+}
+
+.reviews-page__content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.reviews-page__summary,
+.reviews-page__form,
+.reviews-page__list {
+  width: 100%;
+}
+
+.reviews-page__form {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.reviews-page__form > * {
+  width: 100%;
+}
+
+.reviews-page__form .card,
+.reviews-page__form .section-card {
+  padding: 1.5rem;
+  border-radius: 28px;
+}
+
+.reviews-page__form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.reviews-page__form select,
+.reviews-page__form textarea {
+  width: 100%;
+}
+
+.reviews-page__form .btn {
+  width: 100%;
+}
+
+.reviews-page__summary .card,
+.reviews-page__summary .review-summary {
+  border-radius: 28px;
+}
+
+@media (max-width: 900px) {
+  .reviews-page {
+    width: min(100% - 1.25rem, 1100px);
+  }
+
+  .reviews-page__content {
+    gap: 1.15rem;
+  }
+
+  .reviews-page__form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .reviews-page {
+    width: min(100% - 1rem, 1100px);
+  }
+
+  .reviews-page .page-header h1 {
+    font-size: 1.65rem;
+    line-height: 1.15;
+  }
+
+  .reviews-page .page-header p {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .reviews-page__content {
+    gap: 1rem;
+  }
+
+  .reviews-page__form .card,
+  .reviews-page__form .section-card {
+    padding: 1rem;
+    border-radius: 22px;
+  }
+
+  .reviews-page__form h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .reviews-page__form p {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .reviews-page__form textarea {
+    min-height: 130px;
+  }
+
+  .reviews-page__summary .grid,
+  .reviews-page__summary .stats-grid,
+  .reviews-page__summary .review-summary {
+    grid-template-columns: 1fr;
+  }
+}
