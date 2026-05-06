@@ -1,14 +1,21 @@
 import { Button } from '../common/Button';
+import { moldovaCities } from '../../data/moldovaCities';
 import { InputField } from '../common/InputField';
 
 export function RideFilters({ filters, onChange, onSubmit, onReset }) {
   return (
     <form className="card filters-card" onSubmit={onSubmit}>
+      <datalist id="moldova-cities-filter">
+  {moldovaCities.map((city) => (
+    <option key={city} value={city} />
+  ))}
+</datalist>
       <div className="grid grid--3">
         <InputField
           label="Plecare"
           name="origin"
           placeholder="Ex. Chisinau"
+          list="moldova-cities-filter"
           value={filters.origin}
           onChange={onChange}
         />
@@ -16,6 +23,7 @@ export function RideFilters({ filters, onChange, onSubmit, onReset }) {
           label="Destinatie"
           name="destination"
           placeholder="Ex. Balti"
+          list="moldova-cities-filter"
           value={filters.destination}
           onChange={onChange}
         />

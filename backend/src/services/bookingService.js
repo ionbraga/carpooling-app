@@ -34,11 +34,24 @@ const createBooking = async (userId, rideId, seatsBooked) => {
       throw new ApiError(404, 'Cursa nu exista');
     }
 
+    if (ride.status !== 'active') {
+      throw new ApiError(400, 'Cursa nu este activa si nu poate fi rezervata');
+    }
+
+    if (new Date(ride.departure_time) <= new Date()) {
+      throw new ApiError(400, 'Nu poti rezerva o cursa care a trecut deja');
+    }
+
     if (Number(ride.driver_id) === Number(userId)) {
       throw new ApiError(400, 'Nu poti rezerva un loc in propria ta cursa');
     }
 
-    const existingBooking = await bookingRepository.findExistingUserBookingForRide(userId, numericRideId, client);
+    const existingBooking = await bookingRepository.findExistingUserBookingForRide(
+      userId,
+      numericRideId,
+      client
+    );
+
     if (existingBooking) {
       throw new ApiError(409, 'Ai deja o rezervare confirmata pentru aceasta cursa');
     }
@@ -68,11 +81,72 @@ const createBooking = async (userId, rideId, seatsBooked) => {
   }
 };
 
+const cancelBooking = async (userId, bookingId) => {
+  if (!bookingId) {
+    throw new ApiError(400, 'booking_id este obligatoriu');
+  }
+
+  const numericBookingId = Number(bookingId);
+
+  if (!isPositiveInteger(numericBookingId)) {
+    throw new ApiError(400, 'booking_id trebuie sa fie un numar intreg pozitiv');
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const booking = await bookingRepository.findBookingByIdForUpdate(numericBookingId, client);
+
+    if (!booking) {
+      throw new ApiError(404, 'Rezervarea nu exista');
+    }
+
+    if (Number(booking.user_id) !== Number(userId)) {
+      throw new ApiError(403, 'Nu poti anula rezervarea altui utilizator');
+    }
+
+    if (booking.status !== 'confirmed') {
+      throw new ApiError(400, 'Rezervarea nu este activa sau a fost deja anulata');
+    }
+
+    if (booking.ride_status !== 'active') {
+      throw new ApiError(400, 'Cursa asociata acestei rezervari nu mai este activa');
+    }
+
+    if (new Date(booking.departure_time) <= new Date()) {
+      throw new ApiError(400, 'Nu poti anula o rezervare dupa plecarea cursei');
+    }
+
+    const ride = await rideRepository.lockRideById(booking.ride_id, client);
+
+    if (!ride) {
+      throw new ApiError(404, 'Cursa asociata rezervarii nu exista');
+    }
+
+    const updatedAvailableSeats = Number(ride.available_seats) + Number(booking.seats_booked);
+
+    await rideRepository.updateAvailableSeats(booking.ride_id, updatedAvailableSeats, client);
+
+    const cancelledBooking = await bookingRepository.cancelBooking(numericBookingId, client);
+
+    await client.query('COMMIT');
+    return cancelledBooking;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 const getUserBookings = async (userId) => {
   return bookingRepository.getUserBookings(userId);
 };
 
 module.exports = {
   createBooking,
+  cancelBooking,
   getUserBookings,
 };

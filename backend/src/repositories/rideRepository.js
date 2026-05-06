@@ -13,7 +13,10 @@ const createRide = async (driverId, origin, destination, departureTime, availabl
 };
 
 const getAllRides = async (filters = {}) => {
-  const conditions = ['rides.departure_time >= NOW()'];
+  const conditions = [
+    "rides.departure_time >= (NOW() AT TIME ZONE 'Europe/Chisinau')",
+    "rides.status = 'active'",
+  ];
   const values = [];
 
   if (filters.origin) {
@@ -41,6 +44,7 @@ const getAllRides = async (filters = {}) => {
       rides.departure_time,
       rides.available_seats,
       rides.price,
+      rides.status,
       rides.created_at,
       users.name AS driver_name,
       users.email AS driver_email
@@ -51,6 +55,43 @@ const getAllRides = async (filters = {}) => {
   `;
 
   const result = await pool.query(query, values);
+  return result.rows;
+};
+
+const getRidesByDriver = async (driverId) => {
+  const query = `
+    SELECT
+      rides.id,
+      rides.driver_id,
+      rides.origin,
+      rides.destination,
+      rides.departure_time,
+      rides.available_seats,
+      rides.price,
+      rides.status,
+      rides.created_at,
+      COALESCE(SUM(
+        CASE
+          WHEN bookings.status = 'confirmed' THEN bookings.seats_booked
+          ELSE 0
+        END
+      ), 0)::int AS confirmed_seats,
+      COUNT(bookings.id) FILTER (WHERE bookings.status = 'confirmed')::int AS confirmed_bookings_count
+    FROM rides
+    LEFT JOIN bookings ON rides.id = bookings.ride_id
+    WHERE rides.driver_id = $1
+    GROUP BY rides.id
+    ORDER BY
+      CASE
+        WHEN rides.status = 'active' AND rides.departure_time >= (NOW() AT TIME ZONE 'Europe/Chisinau') THEN 0
+        WHEN rides.status = 'active' AND rides.departure_time < (NOW() AT TIME ZONE 'Europe/Chisinau') THEN 1
+        ELSE 2
+      END,
+      rides.departure_time DESC,
+      rides.created_at DESC;
+  `;
+
+  const result = await pool.query(query, [driverId]);
   return result.rows;
 };
 
@@ -91,10 +132,24 @@ const updateAvailableSeats = async (rideId, availableSeats, client) => {
   return result.rows[0];
 };
 
+const cancelRide = async (rideId, client = pool) => {
+  const query = `
+    UPDATE rides
+    SET status = 'cancelled'
+    WHERE id = $1
+    RETURNING *;
+  `;
+
+  const result = await client.query(query, [rideId]);
+  return result.rows[0];
+};
+
 module.exports = {
   createRide,
   getAllRides,
+  getRidesByDriver,
   findRideById,
   lockRideById,
   updateAvailableSeats,
+  cancelRide,
 };

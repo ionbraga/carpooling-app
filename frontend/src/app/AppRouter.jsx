@@ -8,6 +8,7 @@ import { RegisterPage } from '../pages/RegisterPage';
 import { RidesPage } from '../pages/RidesPage';
 import { CreateRidePage } from '../pages/CreateRidePage';
 import { MyBookingsPage } from '../pages/MyBookingsPage';
+import { MyRidesPage } from '../pages/MyRidesPage';
 import { UserReviewsPage } from '../pages/UserReviewsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -38,6 +39,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <CreateRidePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rides/my"
+          element={
+            <ProtectedRoute>
+              <MyRidesPage />
             </ProtectedRoute>
           }
         />

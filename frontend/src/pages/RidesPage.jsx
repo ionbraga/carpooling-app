@@ -70,10 +70,16 @@ export function RidesPage() {
         description="Filtrează după plecare și destinație, vezi locurile disponibile și rezervă direct din platformă."
       >
         {isAuthenticated ? (
-          <Link className="btn btn--primary btn--md" to="/rides/create">
-            Publică o cursă
-          </Link>
-        ) : null}
+  <div className="page-header__actions">
+    <Link className="btn btn--ghost btn--md" to="/rides/my">
+      Cursele mele
+    </Link>
+
+    <Link className="btn btn--primary btn--md" to="/rides/create">
+      Publică o cursă
+    </Link>
+  </div>
+) : null}
       </PageHeader>
 
       <div className="stats-grid stats-grid--compact">
@@ -106,20 +112,23 @@ export function RidesPage() {
       ) : (
         <div className="ride-list">
           {rides.map((ride) => {
-            const canBook =
-              Number(ride.available_seats) > 0 &&
-              (!user || Number(user.id) !== Number(ride.driver_id));
+  const isOwnRide = Boolean(user && Number(user.id) === Number(ride.driver_id));
 
-            return (
-              <RideCard
-                key={ride.id}
-                ride={ride}
-                isAuthenticated={isAuthenticated}
-                canBook={canBook}
-                onBook={setActiveRide}
-              />
-            );
-          })}
+  const canBook =
+    Number(ride.available_seats) > 0 &&
+    !isOwnRide;
+
+  return (
+    <RideCard
+      key={ride.id}
+      ride={ride}
+      isAuthenticated={isAuthenticated}
+      isOwnRide={isOwnRide}
+      canBook={canBook}
+      onBook={setActiveRide}
+    />
+  );
+})}
         </div>
       )}
 

@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS rides (
     departure_time TIMESTAMP NOT NULL,
     available_seats INTEGER NOT NULL CHECK (available_seats >= 0),
     price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT rides_origin_destination_check CHECK (LOWER(origin) <> LOWER(destination))
+    CONSTRAINT rides_origin_destination_check CHECK (LOWER(origin) <> LOWER(destination)),
+    CONSTRAINT rides_status_check CHECK (status IN ('active', 'cancelled'))
 );
 
 CREATE TABLE IF NOT EXISTS bookings (
@@ -25,8 +27,12 @@ CREATE TABLE IF NOT EXISTS bookings (
     seats_booked INTEGER NOT NULL CHECK (seats_booked > 0),
     status VARCHAR(20) NOT NULL DEFAULT 'confirmed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT bookings_unique_user_ride UNIQUE (user_id, ride_id)
+    CONSTRAINT bookings_status_check CHECK (status IN ('confirmed', 'cancelled'))
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS bookings_unique_confirmed_user_ride
+ON bookings (user_id, ride_id)
+WHERE status = 'confirmed';
 
 CREATE TABLE IF NOT EXISTS reviews (
     id SERIAL PRIMARY KEY,

@@ -8,8 +8,18 @@ export const rideService = {
     return data;
   },
 
+  async getMine() {
+    const { data } = await httpClient.get('/rides/my');
+    return data;
+  },
+
   async create(payload) {
     const { data } = await httpClient.post('/rides', payload);
+    return data;
+  },
+
+  async cancel(rideId) {
+    const { data } = await httpClient.patch(`/rides/${rideId}/cancel`);
     return data;
   },
 };

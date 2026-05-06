@@ -10,6 +10,12 @@ const createBooking = asyncHandler(async (req, res) => {
   return successResponse(res, 201, 'Rezervarea a fost creata cu succes', booking);
 });
 
+const cancelBooking = asyncHandler(async (req, res) => {
+  const booking = await bookingService.cancelBooking(req.user.id, req.params.id);
+
+  return successResponse(res, 200, 'Rezervarea a fost anulata cu succes', booking);
+});
+
 const getMyBookings = asyncHandler(async (req, res) => {
   const bookings = await bookingService.getUserBookings(req.user.id);
 
@@ -18,5 +24,6 @@ const getMyBookings = asyncHandler(async (req, res) => {
 
 module.exports = {
   createBooking,
+  cancelBooking,
   getMyBookings,
 };

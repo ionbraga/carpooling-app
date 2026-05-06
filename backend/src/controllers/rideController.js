@@ -19,10 +19,25 @@ const createRide = asyncHandler(async (req, res) => {
 
 const getAllRides = asyncHandler(async (req, res) => {
   const rides = await rideService.getAllRides(req.query);
+
   return successResponse(res, 200, 'Cursele au fost preluate cu succes', rides);
+});
+
+const getMyRides = asyncHandler(async (req, res) => {
+  const rides = await rideService.getMyRides(req.user.id);
+
+  return successResponse(res, 200, 'Cursele create de utilizator au fost preluate cu succes', rides);
+});
+
+const cancelRide = asyncHandler(async (req, res) => {
+  const result = await rideService.cancelRide(req.user.id, req.params.id);
+
+  return successResponse(res, 200, 'Cursa a fost anulata cu succes', result);
 });
 
 module.exports = {
   createRide,
   getAllRides,
+  getMyRides,
+  cancelRide,
 };

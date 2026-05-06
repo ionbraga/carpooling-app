@@ -7,6 +7,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { SectionCard } from '../components/common/SectionCard';
 import { useNotification } from '../hooks/useNotification';
 import { validateRideForm } from '../utils/validators';
+import { moldovaCities } from '../data/moldovaCities';
 
 export function CreateRidePage() {
   const [form, setForm] = useState({
@@ -53,6 +54,12 @@ export function CreateRidePage() {
         description="Completează traseul, ora plecării, locurile disponibile și prețul per loc."
       />
 
+      <datalist id="moldova-cities">
+        {moldovaCities.map((city) => (
+        <option key={city} value={city} />
+         ))}
+      </datalist>
+
       <SectionCard
         title="Detalii cursă"
         description="Introdu datele principale ale cursei. Toate câmpurile sunt validate înainte de publicare."
@@ -62,12 +69,14 @@ export function CreateRidePage() {
             <InputField
               label="Origine"
               placeholder="Ex. Chișinău"
+              list="moldova-cities"
               value={form.origin}
               onChange={(event) => setForm((current) => ({ ...current, origin: event.target.value }))}
             />
             <InputField
               label="Destinație"
               placeholder="Ex. Bălți"
+              list="moldova-cities"
               value={form.destination}
               onChange={(event) => setForm((current) => ({ ...current, destination: event.target.value }))}
             />
