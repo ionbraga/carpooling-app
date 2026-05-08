@@ -2,45 +2,98 @@ const { pool } = require('../config/db');
 const rideRepository = require('../repositories/rideRepository');
 const bookingRepository = require('../repositories/bookingRepository');
 const ApiError = require('../utils/ApiError');
-const { isPositiveInteger, isValidDate, normalizeText } = require('../utils/validators');
+const { isPositiveInteger, normalizeText } = require('../utils/validators');
+const {
+  isValidDateTimeLocal,
+  isAtLeastMinutesInFutureMoldova,
+  isBeforeOrEqualMoldovaNow,
+} = require('../utils/dateTime');
+const {
+  isKnownMoldovaCity,
+  getMoldovaCityLabel,
+  normalizeCity,
+} = require('../data/moldovaCities');
 
 const createRide = async (driverId, origin, destination, departureTime, availableSeats, price) => {
-  if (!origin || !destination || !departureTime || availableSeats === undefined || price === undefined) {
+  if (
+    !origin ||
+    !destination ||
+    !departureTime ||
+    availableSeats === undefined ||
+    availableSeats === null ||
+    String(availableSeats).trim() === '' ||
+    price === undefined ||
+    price === null ||
+    String(price).trim() === ''
+  ) {
     throw new ApiError(400, 'Toate campurile sunt obligatorii');
   }
 
-  const normalizedOrigin = normalizeText(origin);
-  const normalizedDestination = normalizeText(destination);
+  const normalizedOriginInput = normalizeText(origin);
+  const normalizedDestinationInput = normalizeText(destination);
+
   const numericSeats = Number(availableSeats);
   const numericPrice = Number(price);
 
-  if (normalizedOrigin.length < 2) {
-    throw new ApiError(400, 'Originea trebuie sa contina cel putin 2 caractere');
+  if (normalizedOriginInput.length < 2 || normalizedOriginInput.length > 50) {
+    throw new ApiError(400, 'Originea trebuie sa contina intre 2 si 50 de caractere');
   }
 
-  if (normalizedDestination.length < 2) {
-    throw new ApiError(400, 'Destinatia trebuie sa contina cel putin 2 caractere');
+  if (normalizedDestinationInput.length < 2 || normalizedDestinationInput.length > 50) {
+    throw new ApiError(400, 'Destinatia trebuie sa contina intre 2 si 50 de caractere');
   }
 
-  if (normalizedOrigin.toLowerCase() === normalizedDestination.toLowerCase()) {
+  if (!isKnownMoldovaCity(normalizedOriginInput)) {
+    throw new ApiError(400, 'Originea trebuie selectata din lista de localitati disponibile');
+  }
+
+  if (!isKnownMoldovaCity(normalizedDestinationInput)) {
+    throw new ApiError(400, 'Destinatia trebuie selectata din lista de localitati disponibile');
+  }
+
+  if (normalizeCity(normalizedOriginInput) === normalizeCity(normalizedDestinationInput)) {
     throw new ApiError(400, 'Originea si destinatia nu pot fi aceleasi');
   }
 
-  if (!isValidDate(departureTime)) {
-    throw new ApiError(400, 'Data plecarii este invalida');
-  }
+if (!isValidDateTimeLocal(departureTime)) {
+  throw new ApiError(400, 'Data plecarii este invalida');
+}
 
-  if (new Date(departureTime) <= new Date()) {
-    throw new ApiError(400, 'Data plecarii trebuie sa fie in viitor');
+if (!isAtLeastMinutesInFutureMoldova(departureTime, 10)) {
+  throw new ApiError(
+    400,
+    'Data plecarii trebuie sa fie cu cel putin 10 minute in viitor'
+  );
+}
+
+  const selectedDate = new Date(departureTime);
+  const minimumAllowedDate = new Date(Date.now() + 10 * 60 * 1000);
+
+  if (selectedDate < minimumAllowedDate) {
+    throw new ApiError(400, 'Data plecarii trebuie sa fie cu cel putin 10 minute in viitor');
   }
 
   if (!isPositiveInteger(numericSeats)) {
-    throw new ApiError(400, 'Numarul de locuri disponibile trebuie sa fie un numar intreg mai mare decat 0');
+    throw new ApiError(
+      400,
+      'Numarul de locuri disponibile trebuie sa fie un numar intreg mai mare decat 0'
+    );
+  }
+
+  if (numericSeats > 8) {
+    throw new ApiError(400, 'Numarul de locuri disponibile nu poate fi mai mare de 8');
   }
 
   if (Number.isNaN(numericPrice) || numericPrice < 0) {
     throw new ApiError(400, 'Pretul trebuie sa fie un numar mai mare sau egal cu 0');
   }
+
+  if (numericPrice > 5000) {
+    throw new ApiError(400, 'Pretul nu poate depasi 5000 MDL');
+  }
+
+  const normalizedOrigin = getMoldovaCityLabel(normalizedOriginInput);
+  const normalizedDestination = getMoldovaCityLabel(normalizedDestinationInput);
 
   return rideRepository.createRide(
     driverId,
@@ -97,9 +150,9 @@ const cancelRide = async (driverId, rideId) => {
       throw new ApiError(400, 'Cursa este deja anulata');
     }
 
-    if (new Date(ride.departure_time) <= new Date()) {
-      throw new ApiError(400, 'Nu poti anula o cursa care a trecut deja');
-    }
+    if (isBeforeOrEqualMoldovaNow(ride.departure_time)) {
+  throw new ApiError(400, 'Nu poti anula o cursa care a trecut deja');
+}
 
     const cancelledRide = await rideRepository.cancelRide(numericRideId, client);
 

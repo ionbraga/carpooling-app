@@ -98,7 +98,7 @@ const getUserBookings = async (userId) => {
       CASE
         WHEN bookings.status = 'confirmed'
           AND rides.status = 'active'
-          AND rides.departure_time >= NOW()
+          AND rides.departure_time >= (NOW() AT TIME ZONE 'Europe/Chisinau')
         THEN 0
         ELSE 1
       END,

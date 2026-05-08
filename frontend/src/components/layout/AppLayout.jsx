@@ -22,41 +22,45 @@ export function AppLayout() {
       <header className="topbar">
         <div className="container topbar__inner">
           <Link to="/" className="brand">
-  <img src={logo} alt="RideON logo" className="brand__logo" />
+            <img src={logo} alt="RideON logo" className="brand__logo" />
 
-  <div className="brand__text">
-    <strong className="brand__title">RideON</strong>
-    <small className="brand__subtitle">
-      Curse ocazionale, mai simplu
-    </small>
-  </div>
-</Link>
+            <div className="brand__text">
+              <strong className="brand__title">RideON</strong>
+              <small className="brand__subtitle">
+                Curse ocazionale, mai simplu
+              </small>
+            </div>
+          </Link>
 
           <nav className="nav">
-            {publicLinks.map((item) => (
-              <NavLink key={item.to} to={item.to} className="nav__link">
-                {item.label}
-              </NavLink>
-            ))}
+  {publicLinks.map((item) => (
+    <NavLink key={item.to} to={item.to} end className="nav__link">
+      {item.label}
+    </NavLink>
+  ))}
 
-            {isAuthenticated &&
-              privateLinks.map((item) => (
-                <NavLink key={item.to} to={item.to} className="nav__link">
-                  {item.label}
-                </NavLink>
-              ))}
-          </nav>
+  {isAuthenticated &&
+    privateLinks.map((item) => (
+      <NavLink key={item.to} to={item.to} end className="nav__link">
+        {item.label}
+      </NavLink>
+    ))}
+</nav>
 
           <div className="topbar__actions">
             {isAuthenticated ? (
               <>
-                <div className="user-chip">
-                  <span className="user-chip__avatar">{getInitials(user?.name)}</span>
-                  <div>
+                <Link to="/profile" className="user-chip user-chip--link">
+                  <span className="user-chip__avatar">
+                    {getInitials(user?.name)}
+                  </span>
+
+                  <div className="user-chip__info">
                     <strong>{user?.name}</strong>
                     <small>{user?.email}</small>
                   </div>
-                </div>
+                </Link>
+
                 <Button variant="ghost" onClick={logout}>
                   Deconectare
                 </Button>
@@ -66,6 +70,7 @@ export function AppLayout() {
                 <NavLink to="/login" className="nav__link nav__link--button">
                   Autentificare
                 </NavLink>
+
                 <Link to="/register" className="btn btn--primary btn--md">
                   Creează cont
                 </Link>
@@ -85,9 +90,13 @@ export function AppLayout() {
         <div className="container footer__inner">
           <div>
             <strong>RideON</strong>
-            <p>Platformă pentru publicarea curselor, rezervări și evaluări între utilizatori.</p>
+            <p>
+              Platformă pentru publicarea curselor, rezervări și evaluări între utilizatori.
+            </p>
           </div>
-          <p>Conectează șoferi și pasageri pentru drumuri mai simple în Republica Moldova.</p>
+          <p>
+            Conectează șoferi și pasageri pentru drumuri mai simple în Republica Moldova.
+          </p>
         </div>
       </footer>
     </div>

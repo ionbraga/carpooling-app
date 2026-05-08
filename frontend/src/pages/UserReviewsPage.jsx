@@ -47,7 +47,10 @@ export function UserReviewsPage() {
     return { totalReviews, averageRating };
   }, [reviews]);
 
-  const canReview = isAuthenticated && Number(user?.id) !== Number(userId);
+  const canReview =
+  isAuthenticated &&
+  Number(user?.id) !== Number(userId) &&
+  location.state?.canReview === true;
 
   return (
     <div className="reviews-page stack stack--lg">

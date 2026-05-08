@@ -4,26 +4,42 @@ const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const userRepository = require('../repositories/userRepository');
 const ApiError = require('../utils/ApiError');
-const { isValidEmail, normalizeText } = require('../utils/validators');
+const { isValidEmail, isValidName, isStrongPassword, normalizeText } = require('../utils/validators');
 
 const registerUser = async (name, email, password) => {
   if (!name || !email || !password) {
     throw new ApiError(400, 'Toate campurile sunt obligatorii');
   }
 
-  const normalizedName = normalizeText(name);
+  const normalizedName = normalizeText(name).replace(/\s+/g, ' ');
   const normalizedEmail = normalizeText(email).toLowerCase();
 
-  if (normalizedName.length < 2) {
-    throw new ApiError(400, 'Numele trebuie sa contina cel putin 2 caractere');
+  if (!isValidName(normalizedName)) {
+    throw new ApiError(
+      400,
+      'Numele trebuie sa contina intre 2 si 50 de caractere si poate include doar litere, spatii, cratima sau apostrof'
+    );
   }
 
   if (!isValidEmail(normalizedEmail)) {
-    throw new ApiError(400, 'Email invalid');
+    throw new ApiError(400, 'Adresa de email nu este valida');
   }
 
-  if (String(password).length < 6) {
-    throw new ApiError(400, 'Parola trebuie sa contina cel putin 6 caractere');
+  if (!isStrongPassword(password)) {
+    throw new ApiError(
+      400,
+      'Parola trebuie sa aiba intre 8 si 64 de caractere, cel putin o litera mica, o litera mare si o cifra, fara spatii'
+    );
+  }
+
+  const lowerPassword = String(password).toLowerCase();
+
+  if (
+    lowerPassword === normalizedEmail ||
+    lowerPassword.includes(normalizedEmail.split('@')[0].toLowerCase()) ||
+    lowerPassword.includes(normalizedName.toLowerCase())
+  ) {
+    throw new ApiError(400, 'Parola nu trebuie sa contina numele sau emailul');
   }
 
   const existingUser = await userRepository.findUserByEmail(normalizedEmail);
@@ -43,7 +59,7 @@ const loginUser = async (email, password) => {
   const normalizedEmail = normalizeText(email).toLowerCase();
 
   if (!isValidEmail(normalizedEmail)) {
-    throw new ApiError(400, 'Email invalid');
+  throw new ApiError(400, 'Adresa de email nu este valida');
   }
 
   const user = await userRepository.findUserByEmail(normalizedEmail);

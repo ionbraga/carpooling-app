@@ -11,6 +11,7 @@ import { MyBookingsPage } from '../pages/MyBookingsPage';
 import { MyRidesPage } from '../pages/MyRidesPage';
 import { UserReviewsPage } from '../pages/UserReviewsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { ProfilePage } from '../pages/ProfilePage';
 
 export function AppRouter() {
   return (
@@ -58,6 +59,14 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <ProfilePage />
+    </ProtectedRoute>
+  }
+/>
         <Route path="/reviews/:userId" element={<UserReviewsPage />} />
         <Route path="/404" element={<NotFoundPage />} />
         <Route path="*" element={<Navigate to="/404" replace />} />

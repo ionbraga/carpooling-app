@@ -1,34 +1,37 @@
 import { Button } from '../common/Button';
-import { moldovaCities } from '../../data/moldovaCities';
-import { InputField } from '../common/InputField';
+import { CitySelect } from '../common/CitySelect';
 
 export function RideFilters({ filters, onChange, onSubmit, onReset }) {
+  const updateCityFilter = (name, value) => {
+    onChange({
+      target: {
+        name,
+        value,
+        type: 'text',
+      },
+    });
+  };
+
   return (
     <form className="card filters-card" onSubmit={onSubmit}>
-      <datalist id="moldova-cities-filter">
-  {moldovaCities.map((city) => (
-    <option key={city} value={city} />
-  ))}
-</datalist>
       <div className="grid grid--3">
-        <InputField
+        <CitySelect
           label="Plecare"
-          name="origin"
-          placeholder="Ex. Chisinau"
-          list="moldova-cities-filter"
+          placeholder="Ex. Chișinău"
           value={filters.origin}
-          onChange={onChange}
+          onChange={(city) => updateCityFilter('origin', city)}
         />
-        <InputField
-          label="Destinatie"
-          name="destination"
-          placeholder="Ex. Balti"
-          list="moldova-cities-filter"
+
+        <CitySelect
+          label="Destinație"
+          placeholder="Ex. Bălți"
           value={filters.destination}
-          onChange={onChange}
+          onChange={(city) => updateCityFilter('destination', city)}
         />
+
         <label className="checkbox-field">
           <span className="field__label">Disponibilitate</span>
+
           <label className="checkbox-inline">
             <input
               type="checkbox"
@@ -36,13 +39,18 @@ export function RideFilters({ filters, onChange, onSubmit, onReset }) {
               checked={filters.only_available}
               onChange={onChange}
             />
-            <span>Afiseaza doar cursele cu locuri disponibile</span>
+
+            <span>Afișează doar cursele cu locuri disponibile</span>
           </label>
         </label>
       </div>
+
       <div className="filters-card__actions">
-        <Button type="submit">Aplica filtre</Button>
-        <Button type="button" variant="secondary" onClick={onReset}>Reseteaza</Button>
+        <Button type="submit">Aplică filtre</Button>
+
+        <Button type="button" variant="secondary" onClick={onReset}>
+          Resetează
+        </Button>
       </div>
     </form>
   );

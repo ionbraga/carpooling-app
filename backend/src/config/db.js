@@ -1,5 +1,15 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 const env = require('./env');
+
+// PostgreSQL TIMESTAMP WITHOUT TIME ZONE are OID 1114.
+// Îl păstrăm ca string local, nu îl transformăm în Date cu UTC.
+const TIMESTAMP_WITHOUT_TIME_ZONE_OID = 1114;
+
+types.setTypeParser(TIMESTAMP_WITHOUT_TIME_ZONE_OID, (value) =>
+  value
+    .replace(' ', 'T')
+    .replace(/(\.\d{3})\d+$/, '$1')
+);
 
 const pool = new Pool({
   user: env.dbUser,

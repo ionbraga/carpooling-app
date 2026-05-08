@@ -45,8 +45,28 @@ const findExistingReview = async (reviewerId, reviewedUserId) => {
   return result.rows[0];
 };
 
+const findCompletedConfirmedRideWithDriver = async (passengerId, driverId) => {
+  const query = `
+    SELECT
+      bookings.id AS booking_id,
+      rides.id AS ride_id
+    FROM bookings
+    JOIN rides ON rides.id = bookings.ride_id
+    WHERE bookings.user_id = $1
+      AND rides.driver_id = $2
+      AND bookings.status = 'confirmed'
+      AND rides.status = 'active'
+      AND rides.departure_time < (NOW() AT TIME ZONE 'Europe/Chisinau')
+    LIMIT 1;
+  `;
+
+  const result = await pool.query(query, [passengerId, driverId]);
+  return result.rows[0];
+};
+
 module.exports = {
   createReview,
   getReviewsForUser,
   findExistingReview,
+  findCompletedConfirmedRideWithDriver,
 };

@@ -45,6 +45,14 @@ function canCancelBooking(booking) {
   );
 }
 
+function canAddReviewForBooking(booking) {
+  return (
+    booking.status === 'confirmed' &&
+    booking.ride_status === 'active' &&
+    new Date(booking.departure_time) <= new Date()
+  );
+}
+
 export function MyBookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -194,9 +202,12 @@ export function MyBookingsPage() {
                   <Link
   className="btn btn--ghost btn--md"
   to={`/reviews/${booking.driver_id}`}
-  state={{ userName: booking.driver_name }}
+  state={{
+    userName: booking.driver_name,
+    canReview: canAddReviewForBooking(booking),
+  }}
 >
-  Vezi / adaugă review
+  {canAddReviewForBooking(booking) ? 'Vezi / adaugă review' : 'Vezi review-uri'}
 </Link>
                 </div>
               </div>

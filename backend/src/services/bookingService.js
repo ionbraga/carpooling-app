@@ -3,6 +3,7 @@ const bookingRepository = require('../repositories/bookingRepository');
 const rideRepository = require('../repositories/rideRepository');
 const ApiError = require('../utils/ApiError');
 const { isPositiveInteger } = require('../utils/validators');
+const { isBeforeOrEqualMoldovaNow } = require('../utils/dateTime');
 
 const createBooking = async (userId, rideId, seatsBooked) => {
   if (!rideId) {
@@ -38,9 +39,9 @@ const createBooking = async (userId, rideId, seatsBooked) => {
       throw new ApiError(400, 'Cursa nu este activa si nu poate fi rezervata');
     }
 
-    if (new Date(ride.departure_time) <= new Date()) {
-      throw new ApiError(400, 'Nu poti rezerva o cursa care a trecut deja');
-    }
+    if (isBeforeOrEqualMoldovaNow(ride.departure_time)) {
+  throw new ApiError(400, 'Nu poti rezerva o cursa care a trecut deja');
+}
 
     if (Number(ride.driver_id) === Number(userId)) {
       throw new ApiError(400, 'Nu poti rezerva un loc in propria ta cursa');
@@ -115,9 +116,9 @@ const cancelBooking = async (userId, bookingId) => {
       throw new ApiError(400, 'Cursa asociata acestei rezervari nu mai este activa');
     }
 
-    if (new Date(booking.departure_time) <= new Date()) {
-      throw new ApiError(400, 'Nu poti anula o rezervare dupa plecarea cursei');
-    }
+    if (isBeforeOrEqualMoldovaNow(booking.departure_time)) {
+  throw new ApiError(400, 'Nu poti anula o rezervare dupa plecarea cursei');
+}
 
     const ride = await rideRepository.lockRideById(booking.ride_id, client);
 

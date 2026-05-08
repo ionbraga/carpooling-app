@@ -1,21 +1,18 @@
 const reviewRepository = require('../repositories/reviewRepository');
 const userRepository = require('../repositories/userRepository');
 const ApiError = require('../utils/ApiError');
+const { isPositiveInteger } = require('../utils/validators');
 
-const createReview = async (reviewerId, reviewedUserId, rating, comment) => {
-  if (!reviewedUserId) {
-    throw new ApiError(400, 'reviewed_user_id este obligatoriu');
-  }
-
-  if (rating === undefined || rating === null) {
-    throw new ApiError(400, 'rating este obligatoriu');
+const createReview = async (reviewerId, reviewedUserId, rating, comment = '') => {
+  if (!reviewedUserId || !rating) {
+    throw new ApiError(400, 'Utilizatorul evaluat si ratingul sunt obligatorii');
   }
 
   const numericReviewedUserId = Number(reviewedUserId);
   const numericRating = Number(rating);
 
-  if (!Number.isInteger(numericReviewedUserId) || numericReviewedUserId <= 0) {
-    throw new ApiError(400, 'reviewed_user_id trebuie sa fie un numar intreg pozitiv');
+  if (!isPositiveInteger(numericReviewedUserId)) {
+    throw new ApiError(400, 'ID-ul utilizatorului evaluat este invalid');
   }
 
   if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
@@ -23,38 +20,61 @@ const createReview = async (reviewerId, reviewedUserId, rating, comment) => {
   }
 
   if (Number(reviewerId) === numericReviewedUserId) {
-    throw new ApiError(400, 'Nu iti poti lasa review tie insuti');
+    throw new ApiError(400, 'Nu poti lasa review propriului cont');
   }
 
   const reviewedUser = await userRepository.findUserById(numericReviewedUserId);
+
   if (!reviewedUser) {
     throw new ApiError(404, 'Utilizatorul evaluat nu exista');
   }
 
-  const existingReview = await reviewRepository.findExistingReview(reviewerId, numericReviewedUserId);
+  const completedRide = await reviewRepository.findCompletedConfirmedRideWithDriver(
+    reviewerId,
+    numericReviewedUserId
+  );
+
+  if (!completedRide) {
+    throw new ApiError(
+      403,
+      'Poti lasa review doar dupa o cursa confirmata si finalizata cu acest sofer'
+    );
+  }
+
+  const existingReview = await reviewRepository.findExistingReview(
+    reviewerId,
+    numericReviewedUserId
+  );
+
   if (existingReview) {
     throw new ApiError(409, 'Ai lasat deja un review pentru acest utilizator');
   }
 
-  const normalizedComment = comment ? String(comment).trim() : null;
+  const normalizedComment = String(comment ?? '').trim();
 
-  if (normalizedComment && normalizedComment.length > 500) {
-    throw new ApiError(400, 'Comentariul nu poate depasi 500 de caractere');
+  if (normalizedComment.length > 500) {
+    throw new ApiError(400, 'Comentariul poate avea maximum 500 de caractere');
   }
 
-  return reviewRepository.createReview(reviewerId, numericReviewedUserId, numericRating, normalizedComment);
+  return reviewRepository.createReview(
+    reviewerId,
+    numericReviewedUserId,
+    numericRating,
+    normalizedComment
+  );
 };
 
 const getReviewsForUser = async (userId) => {
   const numericUserId = Number(userId);
 
-  if (!Number.isInteger(numericUserId) || numericUserId <= 0) {
-    throw new ApiError(400, 'userId trebuie sa fie un numar intreg pozitiv');
+  if (!isPositiveInteger(numericUserId)) {
+    throw new ApiError(400, 'ID-ul utilizatorului este invalid');
   }
 
-  const reviewedUser = await userRepository.findUserById(numericUserId);
-  if (!reviewedUser) {
-    throw new ApiError(404, 'Utilizatorul cautat nu exista');
+  const user = await userRepository.findUserById(numericUserId);
+
+  if (!user) {
+    throw new ApiError(404, 'Utilizatorul nu exista');
   }
 
   return reviewRepository.getReviewsForUser(numericUserId);
